@@ -724,7 +724,7 @@ constructor(
             AlwaysDarkMode {
                 BrightnessSliderContainer(
                     viewModel =
-                        containerViewModel.brightnessSliderViewModel,
+                        viewModel.containerViewModel.brightnessSliderViewModel,
                     containerColors =
                         ContainerColors(
                             Color.Transparent,
