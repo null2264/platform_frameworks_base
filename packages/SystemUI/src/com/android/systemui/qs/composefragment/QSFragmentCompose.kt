@@ -777,6 +777,11 @@ constructor(
                         }
                         .padding(top = { qqsPadding }, bottom = { bottomPadding })
             ) {
+                val BrightnessSlider: @Composable () -> Unit = {
+                    Element(Elements.BrightnessSlider, modifier = modifier) {
+                        BrightnessSlider(viewModel, layoutState)
+                    }
+                }
                 val Tiles =
                     @Composable {
                         // When always compose is false, this will always be true, and we'll be
@@ -832,7 +837,7 @@ constructor(
                                 .padding(horizontal = qsHorizontalMargin())
                     ) {
                         QuickQuickSettingsLayout(
-                            brightness = { BrightnessSlider(viewModel, layoutState) },
+                            brightness = BrightnessSlider,
                             tiles = Tiles,
                             media = Media,
                             mediaInRow = viewModel.qqsMediaInRow,
@@ -897,7 +902,11 @@ constructor(
                         Spacer(
                             modifier = Modifier.height { qqsPadding + qsExtraPadding.roundToPx() }
                         )
-
+                        val BrightnessSlider: @Composable () -> Unit = {
+                            Element(Elements.BrightnessSlider, modifier = modifier) {
+                                BrightnessSlider(viewModel, layoutState)
+                            }
+                        }
                         val TileGrid =
                             @Composable {
                                 Box {
@@ -954,7 +963,7 @@ constructor(
                             QuickSettingsLayout(
                                 brightness =
                                     if (viewModel.isBrightnessSliderVisible) {
-                                        { BrightnessSlider(viewModel, layoutState) }
+                                        { BrightnessSlider() }
                                     } else {
                                         {}
                                     },
