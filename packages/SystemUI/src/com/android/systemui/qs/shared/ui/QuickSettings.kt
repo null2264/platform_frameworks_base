@@ -33,6 +33,7 @@ object QuickSettings {
 
         val QuickQuickSettingsAndMedia = ElementKey("QuickQuickSettingsAndMedia")
         val SplitShadeQuickSettings = ElementKey("SplitShadeQuickSettings")
+        val BrightnessSlider = ElementKey("BrightnessSlider")
     }
 
     object SharedValues {
