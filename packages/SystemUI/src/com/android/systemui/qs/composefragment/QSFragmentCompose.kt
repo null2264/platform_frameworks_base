@@ -1482,19 +1482,21 @@ fun QuickQuickSettingsLayout(
     mediaInRow: Boolean,
 ) {
     if (mediaInRow) {
-        Row(
-            horizontalArrangement = spacedBy(dimensionResource(R.dimen.qs_tile_margin_vertical)),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(modifier = Modifier.weight(1f)) { tiles() }
-            Box(modifier = Modifier.weight(1f)) { media() }
-            Box(modifier = Modifier.weight(1f)) { brightness() }
+        Column(verticalArrangement = spacedBy(dimensionResource(R.dimen.qs_tile_margin_vertical))) {
+            Row(
+                horizontalArrangement = spacedBy(dimensionResource(R.dimen.qs_tile_margin_vertical)),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(modifier = Modifier.weight(1f)) { tiles() }
+                Box(modifier = Modifier.weight(1f)) { media() }
+            }
+            brightness()
         }
     } else {
         Column(verticalArrangement = spacedBy(dimensionResource(R.dimen.qs_tile_margin_vertical))) {
             tiles()
-            media()
             brightness()
+            media()
         }
     }
 }
@@ -1528,8 +1530,8 @@ fun QuickSettingsLayout(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             tiles()
-            media()
             brightness()
+            media()
         }
     }
 }
