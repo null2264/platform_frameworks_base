@@ -284,6 +284,7 @@ public final class BatteryService extends SystemService {
     private int mBatteryNearlyFullLevel;
     private int mShutdownBatteryTemperature;
     private boolean mShutdownIfNoPower;
+    private boolean mBatteryProtect;
 
     private static String sSystemUiPackage;
 
@@ -461,6 +462,7 @@ public final class BatteryService extends SystemService {
                 com.android.internal.R.bool.config_shutdownIfNoPower);
         sSystemUiPackage = mContext.getResources().getString(
                 com.android.internal.R.string.config_systemUi);
+        mBatteryProtect = false;
 
         mBatteryLevelsEventQueue = new ArrayDeque<>();
         mMetricsLogger = new MetricsLogger();
@@ -501,6 +503,16 @@ public final class BatteryService extends SystemService {
         if (phase == PHASE_ACTIVITY_MANAGER_READY) {
             // check our power situation now that it is safe to display the shutdown dialog.
             synchronized (mLock) {
+                final ContentResolver resolver = mContext.getContentResolver();
+                ContentObserver obsProtection = new ContentObserver(mHandler) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        synchronized (mLock) {
+                            updateBatteryProtect();
+                            processValuesLocked(true);
+                        }
+                    }
+                };
                 ContentObserver obs = new ContentObserver(mHandler) {
                     @Override
                     public void onChange(boolean selfChange) {
@@ -509,13 +521,21 @@ public final class BatteryService extends SystemService {
                         }
                     }
                 };
-                final ContentResolver resolver = mContext.getContentResolver();
+                resolver.registerContentObserver(Settings.System.getUriFor(
+                        "yurei_battery_protect"),
+                        false, obsProtection, UserHandle.USER_ALL);
                 resolver.registerContentObserver(Settings.Global.getUriFor(
                         Settings.Global.LOW_POWER_MODE_TRIGGER_LEVEL),
                         false, obs, UserHandle.USER_ALL);
+                updateBatteryProtect();
                 updateBatteryWarningLevelLocked();
             }
         }
+    }
+
+    private void updateBatteryProtect() {
+        mBatteryProtect = Settings.System.getInt(
+            mContext.getContentResolver(), "yurei_battery_protect", 0) == 1;
     }
 
     private void registerHealthCallback() {
@@ -795,6 +815,8 @@ public final class BatteryService extends SystemService {
                 || mHealthInfo.batteryCycleCount != mLastBroadcastBatteryCycleCount
                 || mHealthInfo.chargingState != mLastBroadcastChargingState
                 || mHealthInfo.batteryCapacityLevel != mLastBroadcastBatteryCapacityLevel)) {
+
+            processBatteryProtectLocked()
 
             if (mPlugType != mLastBroadcastPlugType) {
                 if (mLastBroadcastPlugType == BATTERY_PLUGGED_NONE) {
@@ -1609,6 +1631,18 @@ public final class BatteryService extends SystemService {
         }
         PowerProperties.battery_input_suspended(true);
         mBatteryInputSuspended = true;
+    }
+
+    private void processBatteryProtectLocked() {
+        if (mBatteryProtect && mHealthInfo.batteryLevel >= 80) {
+            BatteryProtectionUtil.setChargingEnabled(false);
+            return;
+        }
+
+        // Re-enable charging if battery drops below threshold (e.g., hysteresis at 75%) or if disabled
+        if (mHealthInfo.batteryLevel <= 75 || !mBatteryProtect) {
+            BatteryProtectionUtil.setChargingEnabled(true);
+        }
     }
 
     private void processValuesLocked(boolean forceUpdate, @Nullable PrintWriter pw) {
