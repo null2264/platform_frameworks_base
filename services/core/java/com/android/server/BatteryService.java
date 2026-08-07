@@ -1634,12 +1634,16 @@ public final class BatteryService extends SystemService {
     }
 
     private void processBatteryProtectLocked() {
+        if (mPlugType == BATTERY_PLUGGED_NONE) {
+            BatteryProtectionUtil.setChargingEnabled(true);
+            return;
+        }
+
         if (mBatteryProtect && mHealthInfo.batteryLevel >= 80) {
             BatteryProtectionUtil.setChargingEnabled(false);
             return;
         }
 
-        // Re-enable charging if battery drops below threshold (e.g., hysteresis at 75%) or if disabled
         if (mHealthInfo.batteryLevel <= 75 || !mBatteryProtect) {
             BatteryProtectionUtil.setChargingEnabled(true);
         }
