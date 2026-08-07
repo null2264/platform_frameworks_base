@@ -4380,6 +4380,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mDefaultDisplayPolicy.setHdmiPlugged(plugged, true /* force */);
     }
 
+    private void toggleVolumePanel() {
+        AudioManager am = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        am.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI);
+    }
+
     // TODO(b/117479243): handle it in InputPolicy
     /** {@inheritDoc} */
     @Override
@@ -4535,14 +4540,20 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         // Handle special keys.
         switch (keyCode) {
             case KeyEvent.KEYCODE_BACK: {
+                boolean isLeftEdge = (event.getFlags() & KeyEvent.FLAG_IS_LEFT_EDGE) != 0;
                 notifyKeyGestureCompletedOnActionUp(event,
                         KeyGestureEvent.KEY_GESTURE_TYPE_BACK);
+
                 if (down) {
                     // There may have other embedded activities on the same Task. Try to move the
                     // focus before processing the back event.
                     mWindowManagerInternal.moveFocusToAdjacentEmbeddedActivityIfNeeded();
                     mBackKeyHandled = false;
                 } else {
+                    if (isLeftEdge) {
+                        toggleVolumePanel();
+                        break;
+                    }
                     if (!hasLongPressOnBackBehavior()) {
                         mBackKeyHandled |= backKeyPress();
                     }

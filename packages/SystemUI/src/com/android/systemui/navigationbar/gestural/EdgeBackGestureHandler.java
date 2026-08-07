@@ -332,8 +332,8 @@ public class EdgeBackGestureHandler {
                     mFalsingManager.isFalseTouch(BACK_GESTURE);
                     // Only inject back keycodes when ahead-of-time back dispatching is disabled.
                     if (mBackAnimation == null) {
-                        boolean sendDown = sendEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
-                        boolean sendUp = sendEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
+                        boolean sendDown = sendEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, mIsOnLeftEdge ? KeyEvent.FLAG_IS_LEFT_EDGE : 0);
+                        boolean sendUp = sendEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK, mIsOnLeftEdge ? KeyEvent.FLAG_IS_LEFT_EDGE : 0);
                         if (DEBUG_MISSING_GESTURE) {
                             Log.d(DEBUG_MISSING_GESTURE_TAG, "Triggered back: down="
                                     + sendDown + ", up=" + sendUp);
@@ -1433,11 +1433,11 @@ public class EdgeBackGestureHandler {
         mBackAnimation.setSwipeThresholds(linearDistance, maxDistance, mNonLinearFactor);
     }
 
-    private boolean sendEvent(int action, int code) {
+    private boolean sendEvent(int action, int code, int flags) {
         long when = SystemClock.uptimeMillis();
         final KeyEvent ev = new KeyEvent(when, when, action, code, 0 /* repeat */,
                 0 /* metaState */, KeyCharacterMap.VIRTUAL_KEYBOARD, 0 /* scancode */,
-                KeyEvent.FLAG_FROM_SYSTEM | KeyEvent.FLAG_VIRTUAL_HARD_KEY,
+                flags | KeyEvent.FLAG_FROM_SYSTEM | KeyEvent.FLAG_VIRTUAL_HARD_KEY,
                 InputDevice.SOURCE_KEYBOARD);
 
         ev.setDisplayId(mContext.getDisplay().getDisplayId());
