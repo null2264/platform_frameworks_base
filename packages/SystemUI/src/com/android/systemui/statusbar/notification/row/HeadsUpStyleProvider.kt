@@ -33,7 +33,7 @@ constructor(private val statusBarModeRepositoryStore: StatusBarModeRepositorySto
     HeadsUpStyleProvider {
 
     override fun shouldApplyCompactStyle(): Boolean {
-        return isInImmersiveMode()
+        return true
     }
 
     private fun isInImmersiveMode() =
