@@ -816,7 +816,7 @@ public final class BatteryService extends SystemService {
                 || mHealthInfo.chargingState != mLastBroadcastChargingState
                 || mHealthInfo.batteryCapacityLevel != mLastBroadcastBatteryCapacityLevel)) {
 
-            processBatteryProtectLocked()
+            processBatteryProtectLocked();
 
             if (mPlugType != mLastBroadcastPlugType) {
                 if (mLastBroadcastPlugType == BATTERY_PLUGGED_NONE) {

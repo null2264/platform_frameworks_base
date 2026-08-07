@@ -1,3 +1,10 @@
+package com.android.server;
+
+import android.util.Slog;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class BatteryProtectionUtil {
     /**
      * Resolves and caches the supported sysfs node path.
