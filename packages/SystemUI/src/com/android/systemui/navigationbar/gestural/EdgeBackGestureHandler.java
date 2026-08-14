@@ -331,7 +331,7 @@ public class EdgeBackGestureHandler {
                     // Notify FalsingManager that an intentional gesture has occurred.
                     mFalsingManager.isFalseTouch(BACK_GESTURE);
                     // Only inject back keycodes when ahead-of-time back dispatching is disabled.
-                    if (mBackAnimation == null) {
+                    if (mIsOnLeftEdge || mBackAnimation == null) {
                         boolean sendDown = sendEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, mIsOnLeftEdge ? KeyEvent.FLAG_IS_LEFT_EDGE : 0);
                         boolean sendUp = sendEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK, mIsOnLeftEdge ? KeyEvent.FLAG_IS_LEFT_EDGE : 0);
                         if (DEBUG_MISSING_GESTURE) {
@@ -1376,6 +1376,9 @@ public class EdgeBackGestureHandler {
     }
 
     private void dispatchToBackAnimation(MotionEvent event) {
+        if (mIsOnLeftEdge) {
+            return;
+        }
         if (mBackAnimation != null) {
             mBackAnimation.onBackMotion(
                     /* touchX = */ event.getX(),
