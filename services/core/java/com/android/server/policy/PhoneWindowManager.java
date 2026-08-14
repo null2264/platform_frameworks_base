@@ -4541,6 +4541,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         switch (keyCode) {
             case KeyEvent.KEYCODE_BACK: {
                 boolean isLeftEdge = (event.getFlags() & KeyEvent.FLAG_IS_LEFT_EDGE) != 0;
+                boolean isLongSwipe = (event.getFlags() & KeyEvent.FLAG_LONG_SWIPE) != 0;
                 notifyKeyGestureCompletedOnActionUp(event,
                         KeyGestureEvent.KEY_GESTURE_TYPE_BACK);
 
@@ -4550,11 +4551,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     mWindowManagerInternal.moveFocusToAdjacentEmbeddedActivityIfNeeded();
                     mBackKeyHandled = false;
                 } else {
-                    if (isLeftEdge) {
-                        toggleVolumePanel();
-                        break;
-                    }
-                    if (!hasLongPressOnBackBehavior()) {
+                    if (isLeftEdge || isLongSwipe) {
+                        if (isLeftEdge) {
+                            toggleVolumePanel();
+                        } else if (isLongPress) {
+                            // TODO: For later, maybe
+                        }
+                        mBackKeyHandled = true;
+                    } else if (!hasLongPressOnBackBehavior()) {
                         mBackKeyHandled |= backKeyPress();
                     }
                     // Don't pass back press to app if we've already handled it via long press
