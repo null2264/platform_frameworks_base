@@ -2162,12 +2162,14 @@ public class KeyEvent extends InputEvent implements Parcelable {
     /**
      * Set when edge swipe is happening on the left edge of the screen.
      * 
-     * For now it's hardcoded to open volume panel
+     * For now it's hardcoded to open volume panel.
+     * @hide
      */
     public static final int FLAG_IS_LEFT_EDGE = 0x1000;
 
     /**
      * Set when edge swipe is long.
+     * @hide
      */
     public static final int FLAG_LONG_SWIPE = 0x2000;
 
