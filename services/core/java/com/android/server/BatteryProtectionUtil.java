@@ -6,21 +6,29 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class BatteryProtectionUtil {
+    private static final String TAG = "BatteryProtectionUtil";
+    private static String sSupportedNode = null;
+
     /**
      * Resolves and caches the supported sysfs node path.
      */
     private static String getSupportedNode() {
+        if (sSupportedNode != null) {
+            return sSupportedNode;
+        }
+
         File node = new File("/sys/class/power_supply/battery/batt_slate_mode");
         if (node.exists() && node.canWrite()) {
-            return "/sys/class/power_supply/battery/batt_slate_mode";
+            sSupportedNode = "/sys/class/power_supply/battery/batt_slate_mode";
+        } else {
+            sSupportedNode = "";
         }
-        
-        return null;
+        return sSupportedNode;
     }
 
     public static void setChargingEnabled(boolean enable) {
         String nodePath = getSupportedNode();
-        if (nodePath == null) {
+        if (sSupportedNode.isEmpty()) {
             return;
         }
 
