@@ -4554,7 +4554,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     if (isLeftEdge || isLongSwipe) {
                         if (isLeftEdge) {
                             toggleVolumePanel();
-                        } else if (isLongPress) {
+                        } else if (isLongSwipe) {
                             // TODO: For later, maybe
                         }
                         mBackKeyHandled = true;
