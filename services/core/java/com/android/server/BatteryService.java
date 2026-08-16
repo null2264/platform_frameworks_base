@@ -523,7 +523,7 @@ public final class BatteryService extends SystemService {
                         }
                     }
                 };
-                resolver.registerContentObserver(Settings.System.getUriFor(
+                resolver.registerContentObserver(Settings.Global.getUriFor(
                         "yurei_battery_protect"),
                         false, obsProtection, UserHandle.USER_ALL);
                 resolver.registerContentObserver(Settings.Global.getUriFor(
@@ -536,7 +536,7 @@ public final class BatteryService extends SystemService {
     }
 
     private void updateBatteryProtect() {
-        mBatteryProtect = Settings.System.getInt(
+        mBatteryProtect = Settings.Global.getInt(
             mContext.getContentResolver(), "yurei_battery_protect", 0) == 1;
     }
 
