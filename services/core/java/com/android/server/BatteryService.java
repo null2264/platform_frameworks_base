@@ -1636,25 +1636,24 @@ public final class BatteryService extends SystemService {
     }
 
     private void processBatteryProtectLocked() {
-        if (!mBatteryProtect && mChargeDisabled) {
-            mChargeDisabled = false;
-            BatteryProtectionUtil.setChargingEnabled(true);
-            return;
-        }
-
-        if (mBatteryProtect && mHealthInfo.batteryLevel >= 80) {
-            if (!mChargeDisabled) {
-                mChargeDisabled = true;
-                BatteryProtectionUtil.setChargingEnabled(false);
-            }
-            return;
-        }
-
-        if (mHealthInfo.batteryLevel <= 75 || !mBatteryProtect) {
+        if (!mBatteryProtect) {
             if (mChargeDisabled) {
-                mChargeDisabled = false;
                 BatteryProtectionUtil.setChargingEnabled(true);
+                mChargeDisabled = false;
             }
+            return;
+        }
+
+        if (mHealthInfo == null) {
+            return;
+        }
+
+        if (mHealthInfo.batteryLevel >= 80 && !mChargeDisabled) {
+            BatteryProtectionUtil.setChargingEnabled(false);
+            mChargeDisabled = true;
+        } else if (mHealthInfo.batteryLevel <= 75 && mChargeDisabled) {
+            BatteryProtectionUtil.setChargingEnabled(true);
+            mChargeDisabled = false;
         }
     }
 
