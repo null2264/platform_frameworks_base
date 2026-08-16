@@ -28,7 +28,7 @@ public class BatteryProtectionUtil {
 
     public static void setChargingEnabled(boolean enable) {
         String nodePath = getSupportedNode();
-        if (sSupportedNode.isEmpty()) {
+        if (nodePath.isEmpty()) {
             return;
         }
 
