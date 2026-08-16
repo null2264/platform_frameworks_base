@@ -2160,6 +2160,20 @@ public class KeyEvent extends InputEvent implements Parcelable {
     public static final int FLAG_IS_ACCESSIBILITY_EVENT = INPUT_EVENT_FLAG_IS_ACCESSIBILITY_EVENT;
 
     /**
+     * Set when edge swipe is happening on the left edge of the screen.
+     * 
+     * For now it's hardcoded to open volume panel.
+     * @hide
+     */
+    public static final int FLAG_IS_LEFT_EDGE = 0x1000;
+
+    /**
+     * Set when edge swipe is long.
+     * @hide
+     */
+    public static final int FLAG_LONG_SWIPE = 0x2000;
+
+    /**
      * Signifies that the key is being predispatched.
      * @hide
      */
