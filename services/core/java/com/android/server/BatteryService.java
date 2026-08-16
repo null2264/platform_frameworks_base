@@ -285,6 +285,7 @@ public final class BatteryService extends SystemService {
     private int mShutdownBatteryTemperature;
     private boolean mShutdownIfNoPower;
     private boolean mBatteryProtect;
+    private boolean mChargeDisabled;
 
     private static String sSystemUiPackage;
 
@@ -463,6 +464,7 @@ public final class BatteryService extends SystemService {
         sSystemUiPackage = mContext.getResources().getString(
                 com.android.internal.R.string.config_systemUi);
         mBatteryProtect = false;
+        mChargeDisabled = false;
 
         mBatteryLevelsEventQueue = new ArrayDeque<>();
         mMetricsLogger = new MetricsLogger();
@@ -1634,18 +1636,25 @@ public final class BatteryService extends SystemService {
     }
 
     private void processBatteryProtectLocked() {
-        if (mPlugType == BATTERY_PLUGGED_NONE) {
+        if (!mBatteryProtect && mChargeDisabled) {
+            mChargeDisabled = false;
             BatteryProtectionUtil.setChargingEnabled(true);
             return;
         }
 
         if (mBatteryProtect && mHealthInfo.batteryLevel >= 80) {
-            BatteryProtectionUtil.setChargingEnabled(false);
+            if (!mChargeDisabled) {
+                mChargeDisabled = true;
+                BatteryProtectionUtil.setChargingEnabled(false);
+            }
             return;
         }
 
         if (mHealthInfo.batteryLevel <= 75 || !mBatteryProtect) {
-            BatteryProtectionUtil.setChargingEnabled(true);
+            if (mChargeDisabled) {
+                mChargeDisabled = false;
+                BatteryProtectionUtil.setChargingEnabled(true);
+            }
         }
     }
 
