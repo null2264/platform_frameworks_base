@@ -1654,6 +1654,13 @@ public final class BatteryService extends SystemService {
         } else if (mHealthInfo.batteryLevel <= 75 && mChargeDisabled) {
             BatteryProtectionUtil.setChargingEnabled(true);
             mChargeDisabled = false;
+            return;  // No need to re-evaluate, we did want to enable the charge
+        }
+
+        // Samsung's firmware simply ignore the charge status and just let the phone charges.
+        // Simply telling it to disable it again fixes it.
+        if (mChargeDisabled && mHealthInfo.batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING) {
+            BatteryProtectionUtil.setChargingEnabled(false);
         }
     }
 
