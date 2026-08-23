@@ -23,6 +23,7 @@ import static com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import static com.android.server.health.Utils.copyV1Battery;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.max;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -285,6 +286,7 @@ public final class BatteryService extends SystemService {
     private int mShutdownBatteryTemperature;
     private boolean mShutdownIfNoPower;
     private boolean mBatteryProtect;
+    private boolean mBatteryMaxLevel;
     private boolean mChargeDisabled;
 
     private static String sSystemUiPackage;
@@ -464,6 +466,7 @@ public final class BatteryService extends SystemService {
         sSystemUiPackage = mContext.getResources().getString(
                 com.android.internal.R.string.config_systemUi);
         mBatteryProtect = false;
+        mBatteryMaxLevel = 80;
         mChargeDisabled = false;
 
         mBatteryLevelsEventQueue = new ArrayDeque<>();
@@ -527,6 +530,9 @@ public final class BatteryService extends SystemService {
                         "yurei_battery_protect"),
                         false, obsProtection, UserHandle.USER_ALL);
                 resolver.registerContentObserver(Settings.Global.getUriFor(
+                        "yurei_battery_protect_max"),
+                        false, obsProtection, UserHandle.USER_ALL);
+                resolver.registerContentObserver(Settings.Global.getUriFor(
                         Settings.Global.LOW_POWER_MODE_TRIGGER_LEVEL),
                         false, obs, UserHandle.USER_ALL);
                 updateBatteryProtect();
@@ -538,6 +544,18 @@ public final class BatteryService extends SystemService {
     private void updateBatteryProtect() {
         mBatteryProtect = Settings.Global.getInt(
             mContext.getContentResolver(), "yurei_battery_protect", 0) == 1;
+        mBatteryMaxLevel = Settings.Global.getInt(
+            mContext.getContentResolver(), "yurei_battery_protect_max", 80);
+        // Normalize max battery level
+        if (mBatteryMaxLevel > 100) {
+            // Battery level is a percentage, the max is obviously 100%
+            mBatteryMaxLevel = 100;
+        } else if (mBatteryMaxLevel < 50) {
+            // Recommended battery levels:
+            // - 80% for day-to-day usage
+            // - 50-60% for Long-term storing
+            mBatteryMaxLevel = 50;
+        }
     }
 
     private void registerHealthCallback() {
@@ -1648,10 +1666,10 @@ public final class BatteryService extends SystemService {
             return;
         }
 
-        if (mHealthInfo.batteryLevel >= 80 && !mChargeDisabled) {
+        if (mHealthInfo.batteryLevel >= mBatteryMaxLevel && !mChargeDisabled) {
             BatteryProtectionUtil.setChargingEnabled(false);
             mChargeDisabled = true;
-        } else if (mHealthInfo.batteryLevel <= 75 && mChargeDisabled) {
+        } else if (mHealthInfo.batteryLevel <= (mBatteryMaxLevel - 5) && mChargeDisabled) {
             BatteryProtectionUtil.setChargingEnabled(true);
             mChargeDisabled = false;
             return;  // No need to re-evaluate, we did want to enable the charge
