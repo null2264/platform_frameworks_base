@@ -541,6 +541,14 @@ public final class BatteryService extends SystemService {
         }
     }
 
+    private void updateProtectStateSetting(boolean active) {
+        Settings.Global.putInt(
+            mContext.getContentResolver(),
+            "yurei_battery_protect_active",
+            active ? 1 : 0
+        );
+    }
+
     private void updateBatteryProtect() {
         mBatteryProtect = Settings.Global.getInt(
             mContext.getContentResolver(), "yurei_battery_protect", 0) == 1;
@@ -556,6 +564,8 @@ public final class BatteryService extends SystemService {
             // - 50-60% for Long-term storing
             mBatteryMaxLevel = 50;
         }
+
+        updateProtectStateSetting(mChargeDisabled);
     }
 
     private void registerHealthCallback() {
@@ -1658,6 +1668,7 @@ public final class BatteryService extends SystemService {
             if (mChargeDisabled) {
                 BatteryProtectionUtil.setChargingEnabled(true);
                 mChargeDisabled = false;
+                updateProtectStateSetting(mChargeDisabled);
             }
             return;
         }
@@ -1669,9 +1680,11 @@ public final class BatteryService extends SystemService {
         if (mHealthInfo.batteryLevel >= mBatteryMaxLevel && !mChargeDisabled) {
             BatteryProtectionUtil.setChargingEnabled(false);
             mChargeDisabled = true;
+            updateProtectStateSetting(mChargeDisabled);
         } else if (mHealthInfo.batteryLevel <= (mBatteryMaxLevel - 5) && mChargeDisabled) {
             BatteryProtectionUtil.setChargingEnabled(true);
             mChargeDisabled = false;
+            updateProtectStateSetting(mChargeDisabled);
             return;  // No need to re-evaluate, we did want to enable the charge
         }
 
