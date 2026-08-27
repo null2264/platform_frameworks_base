@@ -8,6 +8,15 @@ import java.io.IOException;
 public class BatteryProtectionUtil {
     private static final String TAG = "BatteryProtectionUtil";
     private static String sSupportedNode = null;
+    private static boolean doPlugTypeWorkaround = false;
+
+    public static boolean shouldUsePlugTypeWorkaround() {
+        String node = getSupportedNode();
+        if (node.isEmpty()) {
+            return false;
+        }
+        return doPlugTypeWorkaround;
+    }
 
     /**
      * Resolves and caches the supported sysfs node path.
@@ -20,6 +29,7 @@ public class BatteryProtectionUtil {
         File node = new File("/sys/class/power_supply/battery/batt_slate_mode");
         if (node.exists() && node.canWrite()) {
             sSupportedNode = "/sys/class/power_supply/battery/batt_slate_mode";
+            doPlugTypeWorkaround = true;
         } else {
             sSupportedNode = "";
         }

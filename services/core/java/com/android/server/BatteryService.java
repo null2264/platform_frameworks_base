@@ -41,6 +41,9 @@ import android.content.pm.ResolveInfo;
 import android.database.ContentObserver;
 import android.hardware.health.HealthInfo;
 import android.hardware.health.V2_1.BatteryCapacityLevel;
+import android.hardware.usb.UsbManager;
+import android.hardware.usb.UsbPort;
+import android.hardware.usb.UsbPortStatus;
 import android.metrics.LogMaker;
 import android.os.BatteryManager;
 import android.os.BatteryManagerInternal;
@@ -292,6 +295,7 @@ public final class BatteryService extends SystemService {
     private static String sSystemUiPackage;
 
     private int mPlugType;
+    private int mLastKnownPlugType = BATTERY_PLUGGED_NONE;
 
     private boolean mBatteryLevelLow;
 
@@ -772,6 +776,19 @@ public final class BatteryService extends SystemService {
         traceEnd();
     }
 
+    private boolean isUsbPhysicallyConnected() {
+        UsbManager usbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
+        if (usbManager != null) {
+            for (UsbPort port : usbManager.getPorts()) {
+                UsbPortStatus status = port.getStatus();
+                if (status != null && status.isConnected()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static int plugType(HealthInfo healthInfo) {
         if (healthInfo.chargerAcOnline) {
             return BatteryManager.BATTERY_PLUGGED_AC;
@@ -781,8 +798,27 @@ public final class BatteryService extends SystemService {
             return BatteryManager.BATTERY_PLUGGED_WIRELESS;
         } else if (healthInfo.chargerDockOnline) {
             return BatteryManager.BATTERY_PLUGGED_DOCK;
-        } else {
+        } else if (BatteryProtectionUtil.shouldUsePlugTypeWorkaround()) {
             return BATTERY_PLUGGED_NONE;
+        }
+
+        if (currentPlugType != BATTERY_PLUGGED_NONE) {
+            mLastKnownPlugType = currentPlugType;
+        }
+
+        if (currentPlugType == BATTERY_PLUGGED_NONE && mChargeDisabled) {
+            if (isUsbPhysicallyConnected()) {
+                return mLastKnownPlugType;
+            } else {
+                if (healthInfo.batteryLevel <= (mBatteryMaxLevel - 5)) {
+                    BatteryProtectionUtil.setChargingEnabled(true);
+                    mChargeDisabled = false;
+                    updateProtectStateSetting(false);
+                }
+                return BATTERY_PLUGGED_NONE;
+            }
+        } else {
+            return currentPlugType;
         }
     }
 
